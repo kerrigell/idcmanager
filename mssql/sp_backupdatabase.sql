@@ -1,4 +1,4 @@
-USE [master]
+ï»¿USE [master]
 GO
 
 /****** Object:  StoredProcedure [dbo].[sp_backupdatabase]    Script Date: 05/31/2013 11:37:59 ******/
@@ -10,27 +10,27 @@ GO
 
 
 ALTER proc [dbo].[sp_backupdatabase]
- @bak_path nvarchar(4000)=''       --±¸·İÂ·¾¶;
-,@baktype int = null               --±¸·İÀàĞÍÎªÈ«±¸,1Îª²îÒì±¸,2ÎªÈÕÖ¾±¸·İ
-,@type int = null                  --ÉèÖÃĞèÒª±¸·İµÄ¿â,0ÎªÈ«²¿¿â,1ÎªÏµÍ³¿â,2ÎªÈ«²¿ÓÃ»§¿â,3ÎªÖ¸¶¨¿â,4ÎªÅÅ³ıÖ¸¶¨¿â;
-,@dbnames nvarchar(4000)=''        --ĞèÒª±¸·İ»òÅÅ³ıµÄÊı¾İ¿â£¬ÓÃ,¸ô¿ª£¬µ±@type=3»ò4Ê±ÉúĞ§
-,@overdueDay int = null            --ÉèÖÃ¹ıÆÚÌìÊı£¬Ä¬ÈÏÌì;
-,@compression int =0               --0Îª·ñ,1Îª²ÉÓÃÑ¹Ëõ
-,@prefix nvarchar(1000)=''         --±¸·İÎÄ¼şÃûÇ°×º
+ @bak_path nvarchar(4000)=''       --å¤‡ä»½è·¯å¾„;
+,@baktype int = null               --å¤‡ä»½ç±»å‹ä¸ºå…¨å¤‡,1ä¸ºå·®å¼‚å¤‡,2ä¸ºæ—¥å¿—å¤‡ä»½
+,@type int = null                  --è®¾ç½®éœ€è¦å¤‡ä»½çš„åº“,0ä¸ºå…¨éƒ¨åº“,1ä¸ºç³»ç»Ÿåº“,2ä¸ºå…¨éƒ¨ç”¨æˆ·åº“,3ä¸ºæŒ‡å®šåº“,4ä¸ºæ’é™¤æŒ‡å®šåº“;
+,@dbnames nvarchar(4000)=''        --éœ€è¦å¤‡ä»½æˆ–æ’é™¤çš„æ•°æ®åº“ï¼Œç”¨,éš”å¼€ï¼Œå½“@type=3æˆ–4æ—¶ç”Ÿæ•ˆ
+,@overdueDay int = null            --è®¾ç½®è¿‡æœŸå¤©æ•°ï¼Œé»˜è®¤å¤©;
+,@compression int =0               --0ä¸ºå¦,1ä¸ºé‡‡ç”¨å‹ç¼©
+,@prefix nvarchar(1000)=''         --å¤‡ä»½æ–‡ä»¶åå‰ç¼€
 as
---sql server 2005/2008±¸·İ/É¾³ı¹ıÆÚ±¸·İT-sql °æ±¾v1.0
+--sql server 2005/2008å¤‡ä»½/åˆ é™¤è¿‡æœŸå¤‡ä»½T-sql ç‰ˆæœ¬v1.0
 /*
 author:perfectaction
 date  :2009.04
-desc  :ÊÊÓÃÓÚsql2005/2008±¸·İ£¬×Ô¶¯Éú³É¿âÎÄ¼ş¼Ğ£¬¿ÉÒÔ×Ô¶¨Òå±¸·İÀàĞÍºÍ±¸·İ¿âÃûµÈ
-	  ¿ÉÒÔ×Ô¶¨Òå±¸·İ¹ıÆÚµÄÌìÊı
-              É¾³ı¹ıÆÚ±¸·İ¹¦ÄÜ²»»áÉ¾³ı×îºóÒ»´Î±¸·İ£¬ÄÄÅÂÒÑ¾­¹ıÆÚ
-              Èç¹ûÄ³¿â²»ÔÙ±¸·İ£¬ÄÇÃ´Ò²²»»áÔÙÉ¾³ıÖ®Ç°¹ıÆÚµÄ±¸·İ 
-       ÈçÓĞ´íÎóÇëÖ¸Õı£¬Ğ»Ğ».
+desc  :é€‚ç”¨äºsql2005/2008å¤‡ä»½ï¼Œè‡ªåŠ¨ç”Ÿæˆåº“æ–‡ä»¶å¤¹ï¼Œå¯ä»¥è‡ªå®šä¹‰å¤‡ä»½ç±»å‹å’Œå¤‡ä»½åº“åç­‰
+	  å¯ä»¥è‡ªå®šä¹‰å¤‡ä»½è¿‡æœŸçš„å¤©æ•°
+              åˆ é™¤è¿‡æœŸå¤‡ä»½åŠŸèƒ½ä¸ä¼šåˆ é™¤æœ€åä¸€æ¬¡å¤‡ä»½ï¼Œå“ªæ€•å·²ç»è¿‡æœŸ
+              å¦‚æœæŸåº“ä¸å†å¤‡ä»½ï¼Œé‚£ä¹ˆä¹Ÿä¸ä¼šå†åˆ é™¤ä¹‹å‰è¿‡æœŸçš„å¤‡ä»½ 
+       å¦‚æœ‰é”™è¯¯è¯·æŒ‡æ­£ï¼Œè°¢è°¢.
 */
 
 set nocount on
---¿ªÆôxp_cmdshellÖ§³Ö
+--å¼€å¯xp_cmdshellæ”¯æŒ
 exec sp_configure 'show advanced options', 1
 reconfigure with override
 exec sp_configure 'xp_cmdshell', 1 
@@ -38,95 +38,95 @@ reconfigure with override
 exec sp_configure 'show advanced options', 0
 reconfigure with override
 print char(13)+'------------------------'
--- Ê¹ÓÃrarÑ¹Ëõ±ê¼Ç
+-- ä½¿ç”¨rarå‹ç¼©æ ‡è®°
 declare @rarcompression int =0
---ÅĞ¶ÏÊÇ·ñÌîĞ´Â·¾¶
+--åˆ¤æ–­æ˜¯å¦å¡«å†™è·¯å¾„
 if isnull(@bak_path,'')=''
 	begin
-		print('error:ÇëÖ¸¶¨±¸·İÂ·¾¶')
+		print('error:è¯·æŒ‡å®šå¤‡ä»½è·¯å¾„')
 		return 
 	end
 
---ÅĞ¶ÏÊÇ·ñÖ¸¶¨ĞèÒª±¸·İµÄ¿â
+--åˆ¤æ–­æ˜¯å¦æŒ‡å®šéœ€è¦å¤‡ä»½çš„åº“
 if isnull(ltrim(@baktype),'')=''
 	begin
-		print('error:ÇëÖ¸¶¨±¸·İÀàĞÍaa:0ÎªÈ«±¸,1Îª²îÒì±¸,2ÎªÈÕÖ¾±¸·İ')
+		print('error:è¯·æŒ‡å®šå¤‡ä»½ç±»å‹aa:0ä¸ºå…¨å¤‡,1ä¸ºå·®å¼‚å¤‡,2ä¸ºæ—¥å¿—å¤‡ä»½')
 		return 
 	end
 else
 	begin
 		if @baktype not between 0 and 2
 		begin
-			print('error:Ö¸¶¨±¸·İÀàĞÍÖ»ÄÜÎª,1,2:  0ÎªÈ«±¸,1Îª²îÒì±¸,2ÎªÈÕÖ¾±¸·İ')
+			print('error:æŒ‡å®šå¤‡ä»½ç±»å‹åªèƒ½ä¸º,1,2:  0ä¸ºå…¨å¤‡,1ä¸ºå·®å¼‚å¤‡,2ä¸ºæ—¥å¿—å¤‡ä»½')
 			return 
 		end
 	end
---ÅĞ¶ÏÊÇ·ñÖ¸¶¨ĞèÒª±¸·İµÄ¿â
+--åˆ¤æ–­æ˜¯å¦æŒ‡å®šéœ€è¦å¤‡ä»½çš„åº“
 if isnull(ltrim(@type),'')=''
 	begin
-		print('error:ÇëÖ¸¶¨ĞèÒª±¸·İµÄ¿â,0ÎªÈ«²¿¿â,1ÎªÏµÍ³¿â,2ÎªÈ«²¿ÓÃ»§¿â,3ÎªÖ¸¶¨¿â,4ÎªÅÅ³ıÖ¸¶¨¿â')
+		print('error:è¯·æŒ‡å®šéœ€è¦å¤‡ä»½çš„åº“,0ä¸ºå…¨éƒ¨åº“,1ä¸ºç³»ç»Ÿåº“,2ä¸ºå…¨éƒ¨ç”¨æˆ·åº“,3ä¸ºæŒ‡å®šåº“,4ä¸ºæ’é™¤æŒ‡å®šåº“')
 		return 
 	end
 else
 	begin
 		if @type not between 0 and 4
 		begin
-			print('error:ÇëÖ¸¶¨ĞèÒª±¸·İµÄ¿â,0ÎªÈ«²¿¿â,1ÎªÏµÍ³¿â,2ÎªÈ«²¿ÓÃ»§¿â,3ÎªÖ¸¶¨¿â,4ÎªÅÅ³ıÖ¸¶¨¿â')
+			print('error:è¯·æŒ‡å®šéœ€è¦å¤‡ä»½çš„åº“,0ä¸ºå…¨éƒ¨åº“,1ä¸ºç³»ç»Ÿåº“,2ä¸ºå…¨éƒ¨ç”¨æˆ·åº“,3ä¸ºæŒ‡å®šåº“,4ä¸ºæ’é™¤æŒ‡å®šåº“')
 			return 
 		end
 	end
 
---ÅĞ¶ÏÖ¸¶¨¿â»òÅÅ³ı¿âÊ±£¬ÊÇ·ñÌîĞ´¿âÃû
+--åˆ¤æ–­æŒ‡å®šåº“æˆ–æ’é™¤åº“æ—¶ï¼Œæ˜¯å¦å¡«å†™åº“å
 if @type>2
 	if @dbnames=''
 	begin
-		print('error:±¸·İÀàĞÍÎª'+ltrim(@type)+'Ê±£¬ĞèÒªÖ¸¶¨@dbnames²ÎÊı')
+		print('error:å¤‡ä»½ç±»å‹ä¸º'+ltrim(@type)+'æ—¶ï¼Œéœ€è¦æŒ‡å®š@dbnameså‚æ•°')
 		return 
 	end
 
---ÅĞ¶ÏÖ¸¶¨Ö¸¶¨¹ıÆÚÊ±¼ä
+--åˆ¤æ–­æŒ‡å®šæŒ‡å®šè¿‡æœŸæ—¶é—´
 if isnull(ltrim(@overdueDay),'')=''
 begin
-	print('error:±ØĞëÖ¸¶¨±¸·İ¹ıÆÚÊ±¼ä,µ¥Î»ÎªÌì,0ÎªÓÀ²»¹ıÆÚ')
+	print('error:å¿…é¡»æŒ‡å®šå¤‡ä»½è¿‡æœŸæ—¶é—´,å•ä½ä¸ºå¤©,0ä¸ºæ°¸ä¸è¿‡æœŸ')
 	return 
 end
 
---ÅĞ¶ÏÊÇ·ñÖ§³ÖÑ¹Ëõ
+--åˆ¤æ–­æ˜¯å¦æ”¯æŒå‹ç¼©
 if @compression=1 
 	if charindex('2008',@@version)=0 or charindex('Enterprise',@@version)=0
 	begin
 	    set @rarcompression = 1
-		print('MSSQLÒıÇæ·Ç2008ÆóÒµ°æ½«Ê¹ÓÃrar½øĞĞÑ¹Ëõ')
+		print('MSSQLå¼•æ“é2008ä¼ä¸šç‰ˆå°†ä½¿ç”¨rarè¿›è¡Œå‹ç¼©')
 	end
 	else
 	begin
 	    set @rarcompression =0
-	    print(N'MSSQLÒıÇæÎª2008ÆóÒµ°æ£¬½«Ê¹ÓÃÄÚ²¿Çı¶¯½øĞĞÑ¹Ëõ')
+	    print(N'MSSQLå¼•æ“ä¸º2008ä¼ä¸šç‰ˆï¼Œå°†ä½¿ç”¨å†…éƒ¨é©±åŠ¨è¿›è¡Œå‹ç¼©')
 	end
 
---ÅĞ¶ÏÊÇ·ñ´æÔÚ¸Ã´ÅÅÌ
+--åˆ¤æ–­æ˜¯å¦å­˜åœ¨è¯¥ç£ç›˜
 declare @drives table(drive varchar(1),[size] varchar(20))
 insert into @drives exec('master.dbo.xp_fixeddrives')
 if not exists(select 1 from @drives where drive=left(@bak_path,1))
 	begin
-		print('error:²»´æÔÚ¸Ã´ÅÅÌ:'+left(@bak_path,1))
+		print('error:ä¸å­˜åœ¨è¯¥ç£ç›˜:'+left(@bak_path,1))
 		return 
 	end
 
---¸ñÊ½»¯²ÎÊı
+--æ ¼å¼åŒ–å‚æ•°
 select @bak_path=rtrim(ltrim(@bak_path)),@dbnames=rtrim(ltrim(@dbnames))
 if right(isnull(@bak_path,''),1)!='\' set @bak_path=@bak_path+'\'
 if isnull(@dbnames,'')!='' set @dbnames = ','+@dbnames+','
 set @dbnames=replace(@dbnames,' ','')
 
---¶¨Òå±äÁ¿
+--å®šä¹‰å˜é‡
 declare @bak_sql nvarchar(max),@del_sql nvarchar(max),@i int,@maxid int,@rar_cmd nvarchar(max),@bakfile nvarchar(max)
 declare @dirtree_1 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int)
 declare @dirtree_2 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int,
 dbname varchar(300),baktime datetime,isLastbak int)
 declare @createfolder nvarchar(max),@delbackupfile nvarchar(max),@delbak nvarchar(max)
 
---»ñÈ¡ĞèÒª±¸·İµÄ¿âÃû--------------------start
+--è·å–éœ€è¦å¤‡ä»½çš„åº“å--------------------start
 declare @t table(id int identity(1,1) primary key,name nvarchar(max))
 declare @sql nvarchar(max)
 set @sql = 'select name from sys.databases where state=0 and name!=''tempdb''  '
@@ -138,16 +138,16 @@ set @sql = 'select name from sys.databases where state=0 and name!=''tempdb''  '
 		when 4 then 'and charindex('',''+Name+'','','''+@dbnames+''')=0 and database_id>4'
 		else '1>2' end
 insert into @t exec(@sql)
---»ñÈ¡ĞèÒª±¸·İµÄ¿âÃû---------------------end
+--è·å–éœ€è¦å¤‡ä»½çš„åº“å---------------------end
 
---»ñÈ¡ĞèÒª´´½¨µÄÎÄ¼ş¼Ğ------------------start
+--è·å–éœ€è¦åˆ›å»ºçš„æ–‡ä»¶å¤¹------------------start
 insert into @dirtree_1 exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')
 select @createfolder=isnull(@createfolder,'')+'exec master.dbo.xp_cmdshell ''md '+@bak_path+''+name+''',no_output '+char(13)
 from @t as a left join @dirtree_1 as b on a.name=b.subdirectory and b.files=0 and depth=1 where  b.id is null
---»ñÈ¡ĞèÒª´´½¨µÄÎÄ¼ş¼Ğ-------------------end
+--è·å–éœ€è¦åˆ›å»ºçš„æ–‡ä»¶å¤¹-------------------end
 
 
---Éú³É´¦Àí¹ıÆÚ±¸·İµÄsqlÓï¾ä-------------start
+--ç”Ÿæˆå¤„ç†è¿‡æœŸå¤‡ä»½çš„sqlè¯­å¥-------------start
 if @overdueDay>0
 begin
 	insert into @dirtree_2(subdirectory,depth,files) exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')
@@ -176,15 +176,15 @@ begin
 	select @delbak=isnull(@delbak,'')+'exec master.dbo.xp_cmdshell ''del '+@bak_path+''+dbname+'\'
 	+subdirectory+''',no_output '+char(13) from @dirtree_2 where isLastbak=0 and datediff(day,baktime,getdate())>@overdueDay
 end
---Éú³É´¦Àí¹ıÆÚ±¸·İµÄsqlÓï¾ä--------------end
+--ç”Ÿæˆå¤„ç†è¿‡æœŸå¤‡ä»½çš„sqlè¯­å¥--------------end
 
 
 
 
 begin try
     exec( 'exec master.dbo.xp_cmdshell ''md c:\dba\logs\backup\''' )
-	print(@createfolder)  --´´½¨±¸·İËùĞèÎÄ¼ş¼Ğ
-	exec(@createfolder)   --´´½¨±¸·İËùĞèÎÄ¼ş¼Ğ
+	print(@createfolder)  --åˆ›å»ºå¤‡ä»½æ‰€éœ€æ–‡ä»¶å¤¹
+	exec(@createfolder)   --åˆ›å»ºå¤‡ä»½æ‰€éœ€æ–‡ä»¶å¤¹
 end try
 begin catch
 	print 'err:'+ltrim(error_number())
@@ -225,11 +225,11 @@ begin
 	from @t where id=@i
 	set @i=@i+1
 	begin try
-		print(@bak_sql)--Ñ­»·Ö´ĞĞ±¸·İ
-		exec(@bak_sql) --Ñ­»·Ö´ĞĞ±¸·İ
+		print(@bak_sql)--å¾ªç¯æ‰§è¡Œå¤‡ä»½
+		exec(@bak_sql) --å¾ªç¯æ‰§è¡Œå¤‡ä»½
 		--if @rarcompression =0
 		print(@rar_cmd)
-		exec(@rar_cmd) --Ñ¹Ëõ±¸·İÎÄ¼ş
+		exec(@rar_cmd) --å‹ç¼©å¤‡ä»½æ–‡ä»¶
 	end try
 	begin catch
 		print 'err:'+ltrim(error_number())
@@ -238,8 +238,8 @@ begin
 end
 
 begin try
-	print(@delbak)   --É¾³ı³¬ÆÚµÄ±¸·İ
-	exec(@delbak)    --É¾³ı³¬ÆÚµÄ±¸·İ
+	print(@delbak)   --åˆ é™¤è¶…æœŸçš„å¤‡ä»½
+	exec(@delbak)    --åˆ é™¤è¶…æœŸçš„å¤‡ä»½
 end try
 begin catch
 	print 'err:'+ltrim(error_number())
@@ -247,7 +247,7 @@ begin catch
 end catch
 
 
---¹Ø±Õxp_cmdshellÖ§³Ö
+--å…³é—­xp_cmdshellæ”¯æŒ
 --exec sp_configure 'show advanced options', 1
 --reconfigure with override
 --exec sp_configure 'xp_cmdshell', 1 
