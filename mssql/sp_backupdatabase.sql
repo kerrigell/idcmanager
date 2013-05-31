@@ -17,6 +17,7 @@ ALTER proc [dbo].[sp_backupdatabase]
 ,@overdueDay int = null            --设置过期天数，默认天;
 ,@compression int =0               --0为否,1为采用压缩
 ,@prefix nvarchar(1000)=''         --备份文件名前缀
+,@md5 int =0                       --计算MD5
 as
 --sql server 2005/2008备份/删除过期备份T-sql 版本v1.0
 /*
@@ -38,8 +39,6 @@ reconfigure with override
 exec sp_configure 'show advanced options', 0
 reconfigure with override
 print char(13)+'------------------------'
--- 使用rar压缩标记
-declare @rarcompression int =0
 --判断是否填写路径
 if isnull(@bak_path,'')=''
 	begin
@@ -91,18 +90,6 @@ begin
 	return 
 end
 
---判断是否支持压缩
-if @compression=1 
-	if charindex('2008',@@version)=0 or charindex('Enterprise',@@version)=0
-	begin
-	    set @rarcompression = 1
-		print('MSSQL引擎非2008企业版将使用rar进行压缩')
-	end
-	else
-	begin
-	    set @rarcompression =0
-	    print(N'MSSQL引擎为2008企业版，将使用内部驱动进行压缩')
-	end
 
 --判断是否存在该磁盘
 declare @drives table(drive varchar(1),[size] varchar(20))
@@ -120,7 +107,7 @@ if isnull(@dbnames,'')!='' set @dbnames = ','+@dbnames+','
 set @dbnames=replace(@dbnames,' ','')
 
 --定义变量
-declare @bak_sql nvarchar(max),@del_sql nvarchar(max),@i int,@maxid int,@rar_cmd nvarchar(max),@bakfile nvarchar(max)
+declare @bak_sql nvarchar(max),@del_sql nvarchar(max),@i int,@maxid int,@bak_cmd nvarchar(max),@bakfile nvarchar(max),@md5_cmd nvarchar(max)
 declare @dirtree_1 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int)
 declare @dirtree_2 table (id int identity(1,1) primary key,subdirectory nvarchar(600),depth int,files int,
 dbname varchar(300),baktime datetime,isLastbak int)
@@ -141,9 +128,11 @@ insert into @t exec(@sql)
 --获取需要备份的库名---------------------end
 
 --获取需要创建的文件夹------------------start
-insert into @dirtree_1 exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')
-select @createfolder=isnull(@createfolder,'')+'exec master.dbo.xp_cmdshell ''md '+@bak_path+''+name+''',no_output '+char(13)
-from @t as a left join @dirtree_1 as b on a.name=b.subdirectory and b.files=0 and depth=1 where  b.id is null
+--insert into @dirtree_1 exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')
+--select @createfolder=isnull(@createfolder,'')+'exec master.dbo.xp_cmdshell ''md '+@bak_path+''+name+''',no_output '+char(13)
+--from @t as a left join @dirtree_1 as b 
+--on a.name=b.subdirectory and b.files=0 and depth=1 
+--where  b.id is null
 --获取需要创建的文件夹-------------------end
 
 
@@ -152,20 +141,20 @@ if @overdueDay>0
 begin
 	insert into @dirtree_2(subdirectory,depth,files) exec('master.dbo.xp_dirtree '''+@bak_path+''',0,1')
 	if @baktype =0 
-	delete from @dirtree_2 where depth=1 or files=0 or charindex('_Full_bak_',subdirectory)=0 
+	delete from @dirtree_2 where depth=1 or files=0 or charindex('_full',subdirectory)=0 
 	if @baktype =1 
-	delete from @dirtree_2 where depth=1 or files=0 or charindex('_Diff_bak_',subdirectory)=0 
+	delete from @dirtree_2 where depth=1 or files=0 or charindex('_diff',subdirectory)=0 
 	if @baktype=2
-	delete from @dirtree_2 where depth=1 or files=0 or charindex('_Log_bak_',subdirectory)=0 
+	delete from @dirtree_2 where depth=1 or files=0 or charindex('_log',subdirectory)=0 
 	if exists(select 1 from @dirtree_2)
 	delete from @dirtree_2 where isdate(
 			left(right(subdirectory,19),8)+' '+ substring(right(subdirectory,20),11,2) + ':' +  
 			substring(right(subdirectory,20),13,2) +':'+substring(right(subdirectory,20),15,2) 
 			)=0
 	if exists(select 1 from @dirtree_2)
-	update @dirtree_2 set dbname = case when @baktype=0 then left(subdirectory,charindex('_Full_bak_',subdirectory)-1)
-		when @baktype=1 then left(subdirectory,charindex('_Diff_bak_',subdirectory)-1) 
-		when @baktype=2 then left(subdirectory,charindex('_Log_bak_',subdirectory)-1) 
+	update @dirtree_2 set dbname = case when @baktype=0 then left(subdirectory,charindex('_full',subdirectory)-1)
+		when @baktype=1 then left(subdirectory,charindex('_diff',subdirectory)-1) 
+		when @baktype=2 then left(subdirectory,charindex('_log',subdirectory)-1) 
 		else '' end	
 		,baktime=left(right(subdirectory,19),8)+' '+ substring(right(subdirectory,20),11,2) + ':' +  
 			substring(right(subdirectory,20),13,2) +':'+substring(right(subdirectory,20),15,2) 
@@ -183,8 +172,8 @@ end
 
 begin try
     exec( 'exec master.dbo.xp_cmdshell ''md c:\dba\logs\backup\''' )
-	print(@createfolder)  --创建备份所需文件夹
-	exec(@createfolder)   --创建备份所需文件夹
+	--print(@createfolder)  --创建备份所需文件夹
+	--exec(@createfolder)   --创建备份所需文件夹
 end try
 begin catch
 	print 'err:'+ltrim(error_number())
@@ -200,36 +189,58 @@ begin
                      case when RIGHT(ISNULL(@prefix,''),1) = '_' then '' else '_' end +
                      'mssql_backup_'+ Name + '_' +
                      replace(replace(replace(convert(varchar(20),getdate(),120),'-',''),' ','_'),':','') +
-                     case when @baktype=0 then '_full_' 
-                          when @baktype=1 then '_diff_' 
-			              when @baktype=2 then '_logs_' 
+                     case when @baktype=0 then '_full' 
+                          when @baktype=1 then '_diff' 
+			              when @baktype=2 then '_log' 
 			              else null end + 
-			         case when @compression=1 and @rarcompression <> 1 then 'compr' 
-			              else '' end +
 			         case when @baktype=2 then '.trn' 
 			              when @baktype=1 then '.dif' 
 			              else '.bak' end 
     from @t where id=@i
-	select @bak_sql='backup '+ case when @baktype=2 then 'log ' else 'database ' end
-			+ quotename(Name)+' to disk='''+ @bak_path + @bakfile +'''' 
-			+ case when @compression=1 or @baktype=1 then ' with ' else '' end
-			+ case when @compression=1 and @rarcompression=0 then 'compression,' else '' end
-			+ case when @baktype=1 then 'differential,' else '' end
-			+ case when @compression=1 or @baktype=1 then ' noformat' else '' end 
-		  ,@rar_cmd='exec master.dbo.xp_cmdshell ''' 
-		            + 'rar.exe a -r -k -ep '  
-		            + ' "' + @bak_path + @bakfile + '.rar"' 
-		            + ' "' + @bak_path + @bakfile +'" ' 
-		       --     + '>> "c:\dba\logs\backup\' + @prefix + '_' + name +'.txt"'
-		            + ''''
+	--select @bak_sql='backup '+ case when @baktype=2 then 'log ' else 'database ' end
+	--		+ quotename(Name)+' to disk='''+ @bak_path + @bakfile +'''' 
+	--		+ case when @compression=1 or @baktype=1 then ' with ' else '' end
+	--		+ case when @compression=1 and @rarcompression=0 then 'compression,' else '' end
+	--		+ case when @baktype=1 then 'differential,' else '' end
+	--		+ case when @compression=1 or @baktype=1 then ' noformat' else '' end 
+	--	  ,@rar_cmd='exec master.dbo.xp_cmdshell ''' 
+	--	            + 'rar.exe a -r -k -ep '  
+	--	            + ' "' + @bak_path + @bakfile + '.rar"' 
+	--	            + ' "' + @bak_path + @bakfile +'" ' 
+	--	       --     + '>> "c:\dba\logs\backup\' + @prefix + '_' + name +'.txt"'
+	--	            + ''''
+	--from @t where id=@i
+	
+	select @bak_cmd='exec master.dbo.xp_cmdshell '''
+	                + 'msbp backup db(database=' + Name
+	                    + ';backuptype=' + case when @baktype =2 then 'log'
+	                                            when @baktype =1 then 'differential'
+	                                            else 'full' end
+	                    + ';checksum'
+	                    + ')'
+	                    + ' ' + case when @compression =1 then 'zip64(level=6;filename='+ @bakfile +';)'
+	                                 else null end + ' '
+	                    + 'local(path="' + @bak_path + @bakfile + '.zip")'
+	                    + '''',
+	       @md5_cmd='exec master.dbo.xp_cmdshell '''
+	               + 'md5sum ' + @bak_path + @bakfile + '.zip > ' + @bak_path + @bakfile + '.zip.md5'
+	               + ''''
+	                   
 	from @t where id=@i
+	
+	
 	set @i=@i+1
 	begin try
-		print(@bak_sql)--循环执行备份
-		exec(@bak_sql) --循环执行备份
+		--print(@bak_sql)--循环执行备份
+		--exec(@bak_sql) --循环执行备份
 		--if @rarcompression =0
-		print(@rar_cmd)
-		exec(@rar_cmd) --压缩备份文件
+		print(@bak_cmd)
+		exec(@bak_cmd) --压缩备份文件
+		if @md5 =1
+		begin
+		    print(@md5_cmd)
+		    exec(@md5_cmd)
+		end
 	end try
 	begin catch
 		print 'err:'+ltrim(error_number())
@@ -246,17 +257,13 @@ begin catch
 	print 'err:'+error_message()
 end catch
 
-
 --关闭xp_cmdshell支持
---exec sp_configure 'show advanced options', 1
---reconfigure with override
---exec sp_configure 'xp_cmdshell', 1 
---reconfigure with override
---exec sp_configure 'show advanced options', 0
---reconfigure with override
-
-
-
+exec sp_configure 'show advanced options', 1
+reconfigure with override
+exec sp_configure 'xp_cmdshell', 1 
+reconfigure with override
+exec sp_configure 'show advanced options', 0
+reconfigure with override
 
 GO
 
