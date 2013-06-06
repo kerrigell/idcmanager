@@ -1,4 +1,4 @@
-@echo off
+ï»¿@echo off
 title= Windwos/index.html' target='_blank'>Windows Security
 echo.
 echo *******************************************************************************
@@ -6,25 +6,25 @@ echo.              Common Security Configuration For Windows Server 2003
 echo *******************************************************************************
 echo.
 echo.
-rem É¾³ı²»±ØÒªµÄÎÄ¼ş
+rem åˆ é™¤ä¸å¿…è¦çš„æ–‡ä»¶
 del /Q /F C:\WINDOWS\Web\printers\*.*
 del /Q /F C:\WINDOWS\system32\inetsrv\iisadmpwd\*.*
 rd C:\WINDOWS\Web\printers\ /S /Q
 rd C:\WINDOWS\help\iishelp\ /S /Q
-rem ÉèÖÃ½Å±¾ËŞÖ÷
+rem è®¾ç½®è„šæœ¬å®¿ä¸»
 cscript //h:cscript
-rem °²×°windows install·şÎñ
+rem å®‰è£…windows installæœåŠ¡
 msiexec /regserver
 regsvr32 msxml3.dll /s
-rem ÉèÖÃÃ¿¸ö´ÅÅÌ·ÖÇøµÄÈ¨ÏŞ
+rem è®¾ç½®æ¯ä¸ªç£ç›˜åˆ†åŒºçš„æƒé™
 cd\
 echo y | cacls C: /C /E /G administrators:F system:F
 rem cacls /C D: /G administrators:F system:F
 rem cacls /C E: /G administrators:F system:F
-rem ÉèÖÃ¹Ø¼üÄ¿Â¼µÄÈ¨ÏŞ
+rem è®¾ç½®å…³é”®ç›®å½•çš„æƒé™
 echo y | cacls %SYSTEMROOT% /G administrators:F system:F users:C
 echo y | cacls %SYSTEMROOT%\Temp /G administrators:F system:F everyone:F
-rem Çå³ı¹Ø¼üÄ¿Â¼everyoneÈ¨ÏŞ
+rem æ¸…é™¤å…³é”®ç›®å½•everyoneæƒé™
 echo y | cacls C:\Docume~1 /E /R everyone
 echo y | cacls C:\Docume~1\alluse~1 /E /R everyone
 echo y | cacls C:\Docume~1\alluse~1\applic~1 /E /R everyone
@@ -107,9 +107,9 @@ if exist "%%i" (
 echo y | cacls %%i /G administrators:F system:F
 )
 )
-rem ±£´æµ±Ç°·şÎñÆô¶¯×´Ì¬
+rem ä¿å­˜å½“å‰æœåŠ¡å¯åŠ¨çŠ¶æ€
 net start > %systemroot%\security\services.txt
-rem ÉèÖÃ×Ô¶¯Æô¶¯µÄ·şÎñ
+rem è®¾ç½®è‡ªåŠ¨å¯åŠ¨çš„æœåŠ¡
 sc config wuauserv start= auto
 sc config PolicyAgent start= auto
 sc config schedule start= auto
@@ -119,10 +119,10 @@ net start wuauserv
 net start schedule
 net start NSClientpp
 net start winmgmt
-rem ÉèÖÃÊÖ¶¯Æô¶¯µÄ·şÎñ
+rem è®¾ç½®æ‰‹åŠ¨å¯åŠ¨çš„æœåŠ¡
 sc config winmgmt start= demand
 sc config msdtc start= demand
-rem ÉèÖÃ½ûÖ¹Æô¶¯µÄ·şÎñ,Í£Ö¹Æô¶¯µÄ·şÎñ
+rem è®¾ç½®ç¦æ­¢å¯åŠ¨çš„æœåŠ¡,åœæ­¢å¯åŠ¨çš„æœåŠ¡
 for %%i in (
 sharedaccess
 helpsvc
@@ -175,97 +175,97 @@ sc config %%i start= disabled
 net stop %%i
 )
 
-rem ÉèÖÃÃ¿Ìì3µã×Ô¶¯ÖØÆô
+rem è®¾ç½®æ¯å¤©3ç‚¹è‡ªåŠ¨é‡å¯
 rem schtasks /create /ru system /sc daily /tn "restart" /st 03:00:00 /tr "shutdown -r -f -t 30"
-rem ÉèÖÃ»·¾³±äÁ¿
+rem è®¾ç½®ç¯å¢ƒå˜é‡
 rem reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v JAVA_HOME /t REG_SZ /d C:\jdk /f
 rem reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_EXPAND_SZ /d "%JAVA_HOME%\bin;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;" /f
-echo ¿ªÆôÔ¶³Ì×ÀÃæ
+echo å¼€å¯è¿œç¨‹æ¡Œé¢
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t reg_dword /d 0 /f
-rem ĞŞ¸ÄÔ¶³Ì×ÀÃæ¶Ë¿ÚÎª9999
+rem ä¿®æ”¹è¿œç¨‹æ¡Œé¢ç«¯å£ä¸º9999
 rem reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\rdpwd\Tds\tcp"   /v PortNumber /t reg_dword /d 9999 /f
 rem reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v PortNumber /t reg_dword /d 9999 /f
-echo ¹Ø±ÕCD-ROM×Ô¶¯ÔËĞĞ
+echo å…³é—­CD-ROMè‡ªåŠ¨è¿è¡Œ
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoDriveTypeAutoRun /t reg_dword /d 255 /f
-echo ÏÔÊ¾ÎÄ¼şÀ©Õ¹Ãû
+echo æ˜¾ç¤ºæ–‡ä»¶æ‰©å±•å
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v HideFileExt /t reg_dword /d 0 /f
-echo ĞŞ¸Äwindows updateÎª×Ô¶¯¸üĞÂ
+echo ä¿®æ”¹windows updateä¸ºè‡ªåŠ¨æ›´æ–°
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t reg_dword /d 1 /f
-echo »ªÉúÒ½ÉúÉèÖÃÎª×ª´¢Ïß³ÌÉÏÏÂÎÄ
+echo åç”ŸåŒ»ç”Ÿè®¾ç½®ä¸ºè½¬å‚¨çº¿ç¨‹ä¸Šä¸‹æ–‡
 reg add HKLM\SOFTWARE\Microsoft\DrWatson /v AppendToLogFile /t reg_dword /d 0 /f
 reg add HKLM\SOFTWARE\Microsoft\DrWatson /v CreateCrashDump /t reg_dword /d 0 /f
 reg add HKLM\SOFTWARE\Microsoft\DrWatson /v WaveFile /t REG_EXPAND_SZ /d "" /f
-echo ÉèÖÃ×Ô¶¯ÖØĞÂÆô¶¯²»·¢ËÍ¹ÜÀí¾¯±¨
+echo è®¾ç½®è‡ªåŠ¨é‡æ–°å¯åŠ¨ä¸å‘é€ç®¡ç†è­¦æŠ¥
 reg add HKLM\SYSTEM\ControlSet001\Control\CrashControl /v AutoReboot /t reg_dword /d 1 /f
 reg add HKLM\SYSTEM\ControlSet001\Control\CrashControl /v SendAlert /t reg_dword /d 0 /f
-echo ÉèÖÃĞ´Èëµ÷ÊÔĞÅÏ¢ÎªÎŞ
+echo è®¾ç½®å†™å…¥è°ƒè¯•ä¿¡æ¯ä¸ºæ— 
 reg add HKLM\SYSTEM\CurrentControlSet\Control\CrashControl /v CrashDumpEnabled /t reg_dword /d 0 /f
-echo ½ûÓÃ´íÎó±¨¸æ
+echo ç¦ç”¨é”™è¯¯æŠ¥å‘Š
 reg add HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting /v DoReport /t reg_dword /d 0 /f
 reg add HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting /v ShowUI /t reg_dword /d 0 /f
-echo ¹Ø»úÇåÀíĞéÄâÄÚ´æ
+echo å…³æœºæ¸…ç†è™šæ‹Ÿå†…å­˜
 reg add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v ClearPageFileAtShutdown /t reg_dword /d 1 /f
-echo ²»ÏÔÊ¾ÉÏ´ÎµÇÂ¼ÓÃ»§Ãû
+echo ä¸æ˜¾ç¤ºä¸Šæ¬¡ç™»å½•ç”¨æˆ·å
 reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System /v dontdisplaylastusername /t reg_dword /d 1 /f
-echo ¹Ø±Õ445¶Ë¿Ú
+echo å…³é—­445ç«¯å£
 reg add HKLM\SYSTEM\CurrentControlSet\Services\NetBT\Parameters /v SMBDeviceEnabled   /t reg_dword /d 0 /f
-echo ·ÀÖ¹Ğ¡¹æÄ£ddos¹¥»÷
+echo é˜²æ­¢å°è§„æ¨¡ddosæ”»å‡»
 reg add HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters /v SynAttackProtect   /t reg_dword /d 1 /f
-echo ½ûÖ¹½¨Á¢¿ÕÁ¬½Ó
+echo ç¦æ­¢å»ºç«‹ç©ºè¿æ¥
 reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v restrictanonymous /t reg_dword /d 1 /f
-echo ½ûÖ¹SAM ÕË»§ºÍ¹²ÏíµÄÄäÃûÃ¶¾Ù
+echo ç¦æ­¢SAM è´¦æˆ·å’Œå…±äº«çš„åŒ¿åæšä¸¾
 reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v restrictanonymoussam /t reg_dword /d 1 /f
-echo ½ûÖ¹ÏµÍ³×Ô¶¯¹ÜÀí¹²Ïí
+echo ç¦æ­¢ç³»ç»Ÿè‡ªåŠ¨ç®¡ç†å…±äº«
 reg add HKLM\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters /v AutoShareWks /t reg_dword /d 0 /f
-echo ½ûÖ¹ÏµÍ³×Ô¶¯¹²Ïí
+echo ç¦æ­¢ç³»ç»Ÿè‡ªåŠ¨å…±äº«
 reg add HKLM\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters /v AutoShareServer /t reg_dword /d 0 /f
-rem ×Ô¶¯¹Ø±ÕÎŞÏìÓ¦³ÌĞò
+rem è‡ªåŠ¨å…³é—­æ— å“åº”ç¨‹åº
 rem reg add "HKCU\Control Panel\Desktop" /v AutoEndTasks /t reg_sz /d 1 /f
-echo ÉèÖÃÎŞ·¨¹Ø±Õ³ÌĞòµÈ´ıÊ±¼ä
+echo è®¾ç½®æ— æ³•å…³é—­ç¨‹åºç­‰å¾…æ—¶é—´
 reg add "HKCU\Control Panel\Desktop" /v WaitToKillAppTimeout /t reg_sz /d 100 /f
 reg add "HKCU\Control Panel\Desktop" /v HungAppTimeout /t reg_sz /d 500 /f
 reg add HKLM\System\CurrentControlSet\Control /v WaitToKillServiceTimeout /t reg_sz /d 100 /f
-echo ²»ĞèÒª°´ctrl+alt+del
+echo ä¸éœ€è¦æŒ‰ctrl+alt+del
 reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system /v DisableCAD /t reg_dword /d 1 /f
-echo °ÑÏÔÊ¾¡°¹Ø±ÕÊÂ¼ş¸ú×Ù³ÌĞò¡± ¸ü¸ÄÎªÒÑ½ûÓÃ
+echo æŠŠæ˜¾ç¤ºâ€œå…³é—­äº‹ä»¶è·Ÿè¸ªç¨‹åºâ€ æ›´æ”¹ä¸ºå·²ç¦ç”¨
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Reliability" /v ShutdownReasonOn /t reg_dword /d 0 /f
-echo ½ûÖ¹×Ô¶¯¸üĞÂºó²»¶ÏµÄÌáÊ¾ÖØÆô
+echo ç¦æ­¢è‡ªåŠ¨æ›´æ–°åä¸æ–­çš„æç¤ºé‡å¯
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\windowsUpdate /v RebootRelaunchTimeoutEnabled /t reg_DWORD /d 1 /f
-echo ½ûÖ¹ÆÁ±£
+echo ç¦æ­¢å±ä¿
 reg add "hkcu\Software\Policies\Microsoft\Windows\Control Panel\Desktop" /v ScreenSaveActive /t REG_SZ /d 0 /f
-echo ÊÇ·ñÆğÓÃWSUS·şÎñÆ÷
+echo æ˜¯å¦èµ·ç”¨WSUSæœåŠ¡å™¨
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v UseWUServer /t REG_DWORD /d 1 /f
-echo WSUS·şÎñÆ÷ÉèÖÃ
+echo WSUSæœåŠ¡å™¨è®¾ç½®
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v WUServer /t REG_SZ /d http://61.135.177.110 /f
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v WUStatusServer /t REG_SZ /d http://61.135.177.110  /f
-echo ÖØĞÂ¼Æ»®×Ô¶¯¸üĞÂ¼Æ»®ºóµÄµÈ´ıÊ±¼ä
+echo é‡æ–°è®¡åˆ’è‡ªåŠ¨æ›´æ–°è®¡åˆ’åçš„ç­‰å¾…æ—¶é—´
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v RescheduleWaitTime /t REG_DWORD /d 10 /f
-echo ×Ô¶¯¸üĞÂ°²×°ºóÊÇ·ñÖØĞÂÆô¶¯
+echo è‡ªåŠ¨æ›´æ–°å®‰è£…åæ˜¯å¦é‡æ–°å¯åŠ¨
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v NoAutoRebootWithLoggedOnUsers /t REG_DWORD /d 0 /f
-echo ÊÇ·ñÆôÓÃ×Ô¶¯¸üĞÂ
+echo æ˜¯å¦å¯ç”¨è‡ªåŠ¨æ›´æ–°
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v NoAutoUpdate /t REG_DWORD /d 0 /f
-echo ÅäÖÃ×Ô¶¯¸üĞÂ
+echo é…ç½®è‡ªåŠ¨æ›´æ–°
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v AUOptions /t REG_DWORD /d 4 /f
-echo ¼Æ»®°²×°ÈÕÆÚ
+echo è®¡åˆ’å®‰è£…æ—¥æœŸ
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v ScheduledInstallDay /t REG_DWORD /d 0 /f
-echo ¼Æ»®°²×°Ê±¼ä
+echo è®¡åˆ’å®‰è£…æ—¶é—´
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v ScheduledInstallTime /t REG_DWORD /d 3 /f
-echo ¹Ø±ÕÔ¶³Ì¹ÒÔØ±¾µØÓ²ÅÌ
+echo å…³é—­è¿œç¨‹æŒ‚è½½æœ¬åœ°ç¡¬ç›˜
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fDisableCdm /t REG_DWORD /d 1 /f
-echo ½ûÖ¹ÏµÍ³×Ô¶¯Õï¶Ï×Ô¶¯ÔËĞĞ
+echo ç¦æ­¢ç³»ç»Ÿè‡ªåŠ¨è¯Šæ–­è‡ªåŠ¨è¿è¡Œ
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" /v Auto /t REG_SZ /d 0 /f
-rem ÖØÃüÃû¹ÜÀíÔ±ÒÔ¼°À´±öÕÊ»§Ãû³Æ
+rem é‡å‘½åç®¡ç†å‘˜ä»¥åŠæ¥å®¾å¸æˆ·åç§°
 rem wmic useraccount where name='Administrator' call Rename admin
-echo ½ûÓÃÕÊ»§
+echo ç¦ç”¨å¸æˆ·
 net user SQLDebugger /active:no
 net user TsInternetUser /active:no
-echo ÉèÖÃµ±Ç°Ä¿Â¼Îª×ÀÃæ
-if exist %USERPROFILE%\×ÀÃæ\ (
-cd/D %USERPROFILE%\×ÀÃæ\
+echo è®¾ç½®å½“å‰ç›®å½•ä¸ºæ¡Œé¢
+if exist %USERPROFILE%\æ¡Œé¢\ (
+cd/D %USERPROFILE%\æ¡Œé¢\
 ) else (
 cd/D %USERPROFILE%\desktop\
 )
-echo Éú³Éwindows×é²ßÂÔ°²È«ÉèÖÃ
+echo ç”Ÿæˆwindowsç»„ç­–ç•¥å®‰å…¨è®¾ç½®
 if exist secinit.inf del secinit.inf /f
 echo [Unicode] >secinit.inf
 echo. >>secinit.inf
@@ -354,11 +354,11 @@ echo [Version] >>secinit.inf
 echo signature="$CHICAGO$" >>secinit.inf
 echo Revision=1 >>secinit.inf
 cls
-echo ÔËĞĞ°²È«ÉèÖÃ
+echo è¿è¡Œå®‰å…¨è®¾ç½®
 move /y secinit.inf %systemroot%\security\templates\secinit.inf
 echo y|secedit /configure /cfg %systemroot%\security\templates\secinit.inf /db %systemroot%\security\database\secinit.db /overwrite /log %systemroot%\security\logs\secinit.log
 regsvr32 /s scecli.dll
-echo ¹Ø±ÕÄ¬ÈÏ¹²Ïí
+echo å…³é—­é»˜è®¤å…±äº«
 net share c$ /del
 net share d$ /del
 net share e$ /del
